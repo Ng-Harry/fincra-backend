@@ -8,6 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 const FINCRA_SECRET_KEY = process.env.FINCRA_SECRET_KEY;
+const FINCRA_PUBLIC_KEY = process.env.FINCRA_PUBLIC_KEY;
 const REDIRECT_URL = process.env.REDIRECT_URL;
 
 app.post('/api/initiate-payment', async (req, res) => {
@@ -25,6 +26,7 @@ app.post('/api/initiate-payment', async (req, res) => {
       {
         headers: {
           'api-key': FINCRA_SECRET_KEY,
+          'x-pub-key': FINCRA_PUBLIC_KEY,
           'Content-Type': 'application/json'
         }
       }
