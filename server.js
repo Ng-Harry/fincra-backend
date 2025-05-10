@@ -15,7 +15,7 @@ app.post('/api/initiate-payment', async (req, res) => {
 
   try {
     const response = await axios.post(
-      'https://sandboxapi.fincra.com/checkout/payment/initiate',
+      'https://sandboxapi.fincra.com/checkout/payments',
       {
         amount,
         currency,
