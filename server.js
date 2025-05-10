@@ -7,6 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+console.log("Public Key from .env:", process.env.FINCRA_PUBLIC_KEY);
+console.log("Private Key from .env:", process.env.FINCRA_PRIVATE_KEY);
+
 // Instantiate Fincra
 const fincra = new Fincra(
   process.env.FINCRA_PUBLIC_KEY,
