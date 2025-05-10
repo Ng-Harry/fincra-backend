@@ -14,7 +14,7 @@ app.post('/api/initiate-payment', async (req, res) => {
 
   try {
     const response = await axios.post(
-      'https://sandboxapi.fincra.com/checkout/payment/initiate',
+      'https://sandboxapi.fincra.com/checkout/payments',
       {
         amount,
         currency,
@@ -31,10 +31,12 @@ app.post('/api/initiate-payment', async (req, res) => {
 
     res.json({ paymentLink: response.data?.data?.link });
   } catch (err) {
-    console.error("Fincra Error:", err.response?.data || err.message);
-    res.status(500).json({ error: 'Failed to initiate payment' });
+    const status = err.response?.status || 500;
+    const errorMessage = err.response?.data || { message: 'Fincra request failed.' };
+    console.error('Fincra Error:', errorMessage);
+    res.status(status).json({ error: errorMessage });
   }
 });
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Backend running on http://localhost:${PORT}`));
