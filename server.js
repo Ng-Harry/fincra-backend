@@ -1,50 +1,41 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { Fincra } = require('fincra-node-sdk');
+const axios = require('axios');
 
 const app = express();
-const PORT = process.env.PORT || 8000;
-
 app.use(cors());
 app.use(express.json());
 
-// Load Fincra credentials from environment variables
-const PUBLIC_KEY = process.env.FINCRA_PUBLIC_KEY;
-const PRIVATE_KEY = process.env.FINCRA_PRIVATE_KEY;
-
-if (!PUBLIC_KEY || !PRIVATE_KEY) {
-  console.error("❌ Fincra keys missing. Check your .env file.");
-  process.exit(1);
-}
-
-console.log("✅ Loaded Fincra keys.");
-
-// Initialize Fincra SDK
-const fincra = new Fincra(PUBLIC_KEY, PRIVATE_KEY, { sandbox: true });
+const FINCRA_SECRET_KEY = process.env.FINCRA_SECRET_KEY;
+const REDIRECT_URL = process.env.REDIRECT_URL;
 
 app.post('/api/initiate-payment', async (req, res) => {
   const { name, email, amount, currency } = req.body;
 
-  if (!name || !email || !amount || !currency) {
-    return res.status(400).json({ error: "All fields are required." });
-  }
-
   try {
-    const result = await fincra.checkout.initiatePayment({
-      amount,
-      currency,
-      customer: { name, email },
-      redirectUrl: process.env.REDIRECT_URL || 'http://localhost:5173/payment-success',
-    });
+    const response = await axios.post(
+      'https://sandboxapi.fincra.com/checkout/payment/initiate',
+      {
+        amount,
+        currency,
+        customer: { name, email },
+        redirectUrl: REDIRECT_URL
+      },
+      {
+        headers: {
+          'api-key': FINCRA_SECRET_KEY,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    res.json({ paymentLink: result?.data?.link });
+    res.json({ paymentLink: response.data?.data?.link });
   } catch (err) {
-    console.error('❌ Fincra SDK error:', err.response?.data || err.message);
-    res.status(500).json({ error: err.response?.data || 'Failed to initiate payment' });
+    console.error('Fincra Error:', err.response?.data || err.message);
+    res.status(500).json({ error: 'Failed to initiate payment' });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Backend running on http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => console.log(`✅ Backend running on http://localhost:${PORT}`));
